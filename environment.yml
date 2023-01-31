@@ -301,6 +301,7 @@ dependencies:
   - zstd=1.5.2=h3eb15da_6
   - pip:
       - assertpy==1.1
+      - autopep8==2.0.1
       - braceexpand==0.1.7
       - cython==0.29.33
       - fastargs==1.2.0
@@ -317,6 +318,7 @@ dependencies:
       - nibabel==5.0.0
       - numexpr==2.8.4
       - pandas==1.5.3
+      - pycodestyle==2.10.0
       - pycortex==1.2.5
       - pyparsing==3.0.9
       - pytorch-pfn-extras==0.5.8
