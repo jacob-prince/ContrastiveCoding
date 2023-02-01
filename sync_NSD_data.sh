@@ -12,9 +12,9 @@ aws s3 sync s3://natural-scenes-dataset/nsddata_betas $DATADIR/nsddata_betas \
             --exclude "*betas*session*nii.gz"
 
 # syncing anatomical data and other important files in 'nsddata'
-#aws s3 sync s3://natural-scenes-dataset/nsddata $DATADIR/nsddata
+aws s3 sync s3://natural-scenes-dataset/nsddata $DATADIR/nsddata
 
 # syncing the stimuli
-#aws s3 sync s3://natural-scenes-dataset/nsddata_stimuli $DATADIR/nsddata_stimuli
+aws s3 sync s3://natural-scenes-dataset/nsddata_stimuli $DATADIR/nsddata_stimuli
 
 
