@@ -70,6 +70,7 @@
 
 !/images/*
 !/logs/*
+!/z-old/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
