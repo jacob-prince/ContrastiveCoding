@@ -71,7 +71,7 @@
 !/images/*
 !/logs/*
 z-old
-**/NOTEBOOKS/Sandbox/*
+**/Sandbox/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
