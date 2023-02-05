@@ -1,6 +1,6 @@
 #!/bin/bash
 
-envname=dnffa_test_2
+envname=dnffa
 
 # prepare
 conda deactivate
