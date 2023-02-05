@@ -22,17 +22,19 @@ ipython kernel install --user --name=$envname
 # download pycortex
 pip install -U pycortex
 
-# some packages for github/jupyter integration
+# # some packages for github/jupyter integration
 pip install GitPython
 pip install nbstripout nbconvert
 nbstripout --install
 
-# download this project package
+# wandb integration
+pip install wandb
+wandb login # will need to manually paste in key
+
+# # download this project package
 pip install --user -e .
 
 # test imports
 python3 test_imports.py
-
-
 
 
