@@ -14,7 +14,6 @@ def train_readout_layer(model, readout_from):
     args.readout_from = readout_from
     args.wandb_repo = 'DNFFA'
     
-    
     # determine which readout layer is being used and modify model accordingly
     readout_model = append_readout_layer(model, readout_from)
     
@@ -22,7 +21,7 @@ def train_readout_layer(model, readout_from):
     train_loader, val_loader = train.get_ffcv_dataloaders(args)
     
     # main training loop
-    readout_model = train.main_training_loop(readout_model, copy.deepcopy(train_loader), copy.deepcopy(val_loader), args)
+    readout_model = train.main_training_loop(readout_model, train_loader, val_loader, args)
     
     return readout_model
 

@@ -37,7 +37,7 @@ def arg_helper():
     parser.add_argument('--device', default='cuda:0', 
                         type=str, metavar='N', help='device for training')
     
-    parser.add_argument('--num-workers', default=12, 
+    parser.add_argument('--num-workers', default=128, 
                         type=int, metavar='N', help='number of dataloader workers')
     
     parser.add_argument('--log-freq', default=10, 
@@ -137,8 +137,8 @@ def main_training_loop(model, train_loader, val_loader, args):
     for epoch in progress_bar(range(start_epoch, args.train_epochs)):
 
         model.eval()
-        print(len(train_loader))
-        for images, target in train_loader:
+        
+        for step, (images, target, _, _) in enumerate(progress_bar(train_loader), start=epoch * len(train_loader)):
 
             output = model(images.to(args.device, non_blocking=True))
             
@@ -193,7 +193,7 @@ def main_training_loop(model, train_loader, val_loader, args):
         top1 = AverageMeter('Acc@1')
         top5 = AverageMeter('Acc@5')
         with torch.no_grad():
-            for images, target in progress_bar(val_loader):
+            for images, target, _, _ in progress_bar(val_loader):
                 output = model(images.to(args.device, non_blocking=True))
                 acc1, acc5 = accuracy(output, target.to(args.device, non_blocking=True), topk=(1, 5))
                 top1.update(acc1[0].item(), images.size(0))
