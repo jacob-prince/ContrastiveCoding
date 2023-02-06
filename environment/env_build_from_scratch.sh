@@ -6,7 +6,7 @@ envname=dnffa
 conda deactivate
 pip install --upgrade pip
 
-# # start with packages needed for ffcv
+# start with packages needed for ffcv
 conda create -n $envname python=3.9 cupy pkg-config compilers libjpeg-turbo opencv pytorch torchvision cudatoolkit=11.3 numba -c conda-forge -c pytorch && conda activate $envname && conda update ffmpeg && pip install pyzmq scipy && pip install ffcv
 
 # downgrade packages to make ffcv work
@@ -22,7 +22,7 @@ ipython kernel install --user --name=$envname
 # download pycortex
 pip install -U pycortex
 
-# # some packages for github/jupyter integration
+# some packages for github/jupyter integration
 pip install GitPython
 pip install nbstripout nbconvert
 nbstripout --install
@@ -31,7 +31,7 @@ nbstripout --install
 pip install wandb
 wandb login # will need to manually paste in key
 
-# # download this project package
+# download this project package
 pip install --user -e .
 
 # test imports
