@@ -24,6 +24,55 @@ def get_coco_class_name(classID, cats):
             return cats[i]['supercategory'], cats[i]['name']
     return "None"
 
+def get_coco_dict(subjs, annotations):
+    
+    coco_dict = dict()
+    nsddir = paths.nsd()
+    info_fn = f'{nsddir}/nsddata/experiments/nsd/nsd_stim_info_merged.csv'
+    nsd_df = pd.read_csv(info_fn)
+
+    shared1000_cocos = np.sort(nsd_df.iloc[nsd_df['shared1000'].values==True]['cocoId'].values)
+
+    coco_dict['shared1000'] = shared1000_cocos
+
+    coco_dict['special515'] = []
+
+    for subj in subjs:
+
+        coco_dict[subj] = dict()
+
+        # get indices of subject-specific non-shared cocos
+        coco_dict[subj]['shared'] = np.sort(np.intersect1d(np.unique(annotations[subj].index), coco_dict['shared1000']))
+        coco_dict[subj]['nonshared'] = np.sort(np.setdiff1d(np.unique(annotations[subj].index), coco_dict['shared1000']))
+
+        # get indices of cocos each subject viewed 3x
+        a,b = np.unique(annotations[subj].index,return_counts=True)
+        subj_3rep_cocos = np.unique(a[b==3])
+
+        # get subset of 3x cocos that are shared/nonshared
+        coco_dict[subj]['shared_3rep'] = np.sort(np.intersect1d(coco_dict['shared1000'], subj_3rep_cocos))
+        coco_dict[subj]['nonshared_3rep'] = np.sort(np.setdiff1d(subj_3rep_cocos, coco_dict['shared1000']))
+
+        #print(len(coco_dict[subj]['shared_3rep']),len(coco_dict[subj]['nonshared_3rep']))
+
+        # get 1000 nonshared 3x cocos from each subject
+        for batch in range(4):
+            # all subjs have at least 4000 nonshared 3rep cocos
+            coco_dict[subj][f'nonshared1000_3rep_batch{batch}'] = coco_dict[subj]['nonshared_3rep'][:4000][batch::4] 
+
+        # get the special515 cocos
+        if len(coco_dict['special515']) == 0:
+            coco_dict['special515'] = subj_3rep_cocos
+        else:
+            coco_dict['special515'] = np.sort(np.intersect1d(coco_dict['special515'], subj_3rep_cocos))
+
+    assert(len(coco_dict['special515']) == 515)
+    assert(len(np.intersect1d(coco_dict['shared1000'], coco_dict['special515'])) == 515)
+
+    #print(coco_dict[subj].keys())
+    
+    return coco_dict
+
 def load_NSD_coco_annotations(subjs, savedir):
     
     annotations = dict()
