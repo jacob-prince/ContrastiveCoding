@@ -21,6 +21,7 @@ import sklearn
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy
+from pycocotools.coco import COCO
 
 from PROJECT_DNFFA.ANALYSES import hello
 

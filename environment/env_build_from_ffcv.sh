@@ -1,6 +1,6 @@
 #!/bin/bash
 
-envname=dnffa
+envname=$1
 
 conda deactivate
 conda create --clone ffcv --name $envname
@@ -26,6 +26,9 @@ nbstripout --install
 # wandb integration
 mamba install wandb
 wandb login # will need to manually paste in key
+
+# for dealing with COCO dataset
+mamba install pycocotools
 
 # install this project package
 pip install --user -e ../
