@@ -4,6 +4,9 @@ def base():
 def nsd():
     return f'{base()}/DataLocal-w/NSD'
 
+def nsd_stimuli():
+    return f'{nsd()}/nsddata_stimuli/stimuli/nsd'
+
 def full_coco_annots():
     return f'{base()}/DataLocal-w/COCO/annotations'
 
