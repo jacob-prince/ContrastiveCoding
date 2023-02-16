@@ -75,6 +75,7 @@ z-old
 **/checkpoints/*
 **/wandb/*
 **/debug/*
+**/STIMULUS_SETS/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
