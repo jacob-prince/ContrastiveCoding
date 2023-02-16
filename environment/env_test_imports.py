@@ -22,6 +22,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy
 from pycocotools.coco import COCO
+import graphviz
+import torchlens
 
 from PROJECT_DNFFA.ANALYSES import hello
 

@@ -30,6 +30,10 @@ wandb login # will need to manually paste in key
 # for dealing with COCO dataset
 mamba install pycocotools
 
+# for running torchlens
+pip install graphviz
+pip install git+https://github.com/johnmarktaylor91/torchlens
+
 # install this project package
 pip install --user -e ../
 
