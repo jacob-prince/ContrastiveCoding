@@ -1,7 +1,7 @@
 import cortex
 import numpy as np
 import matplotlib.pyplot as plt
-from PROJECT_DNFFA import nsdorg
+from PROJECT_DNFFA.HELPERS import nsdorg
 
 def plot_ROI_flatmap(subj, space, roi_group, included_voxels, mapper='nearest',vmin=0,vmax=1,cmap='Spectral_r',colorbar=True):
 

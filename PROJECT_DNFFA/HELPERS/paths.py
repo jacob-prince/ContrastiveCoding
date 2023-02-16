@@ -4,6 +4,12 @@ def base():
 def nsd():
     return f'{base()}/DataLocal-w/NSD'
 
+def full_coco_annots():
+    return f'{base()}/DataLocal-w/COCO/annotations'
+
+def nsd_coco_annots():
+    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/STIMULUS_SETS/fMRI/NSD_COCO_annotations'
+
 def cifar10():
     return f'{base()}/DataLocal-w/ffcv-cifar10/'
 
