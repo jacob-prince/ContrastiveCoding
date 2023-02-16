@@ -32,3 +32,6 @@ pip install --user -e ../
 
 # test imports
 python3 env_test_imports.py
+
+# set directory of the pycortex database
+python3 pycortex_database_setup.py
