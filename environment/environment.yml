@@ -15,6 +15,8 @@ dependencies:
   - backports.functools_lru_cache=1.6.4=pyhd8ed1ab_0
   - beautifulsoup4=4.11.2=pyha770c72_0
   - bleach=6.0.0=pyhd8ed1ab_0
+  - brotli=1.0.9=h166bdaf_8
+  - brotli-bin=1.0.9=h166bdaf_8
   - brotlipy=0.7.0=py39hb9d737c_1005
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
@@ -27,8 +29,11 @@ dependencies:
   - comm=0.1.2=pyhd8ed1ab_0
   - conda-package-handling=2.0.2=pyh38be061_0
   - conda-package-streaming=0.7.0=pyhd8ed1ab_1
+  - contourpy=1.0.7=py39h4b4f3f3_0
   - cudatoolkit=11.8.0=h37601d7_11
   - cupy=11.5.0=py39hc3c280e_0
+  - cycler=0.11.0=pyhd8ed1ab_0
+  - cython=0.29.33=py39h227be39_0
   - dbus=1.13.6=h5008d03_3
   - debugpy=1.6.5=py39h227be39_0
   - decorator=5.1.1=pyhd8ed1ab_0
@@ -48,6 +53,7 @@ dependencies:
   - fontconfig=2.14.1=hc2a2eb6_0
   - fonts-conda-ecosystem=1=0
   - fonts-conda-forge=1=0
+  - fonttools=4.38.0=py39hb9d737c_1
   - freeglut=3.2.2=h9c3ff4c_1
   - freetype=2.12.1=hca18f0e_1
   - gettext=0.21.1=h27087fc_0
@@ -66,6 +72,7 @@ dependencies:
   - icu=70.1=h27087fc_0
   - idna=3.4=pyhd8ed1ab_0
   - importlib-metadata=6.0.0=pyha770c72_0
+  - importlib-resources=5.10.2=pyhd8ed1ab_0
   - importlib_resources=5.10.2=pyhd8ed1ab_0
   - ipykernel=6.20.2=pyh210e3f2_0
   - ipython=8.8.0=pyh41d4057_0
@@ -82,13 +89,18 @@ dependencies:
   - jupyterlab_pygments=0.2.2=pyhd8ed1ab_0
   - jupyterlab_widgets=3.0.5=pyhd8ed1ab_0
   - keyutils=1.6.1=h166bdaf_0
+  - kiwisolver=1.4.4=py39hf939315_1
   - krb5=1.20.1=h81ceb04_0
   - lame=3.100=h166bdaf_1003
+  - lcms2=2.14=hfd0df8a_1
   - ld_impl_linux-64=2.39=hcc3a1bd_1
   - lerc=4.0.0=h27087fc_0
   - libaec=1.0.6=hcb278e6_1
   - libarchive=3.6.2=h3d51595_0
   - libblas=3.9.0=16_linux64_openblas
+  - libbrotlicommon=1.0.9=h166bdaf_8
+  - libbrotlidec=1.0.9=h166bdaf_8
+  - libbrotlienc=1.0.9=h166bdaf_8
   - libcap=2.66=ha37c62d_0
   - libcblas=3.9.0=16_linux64_openblas
   - libclang=15.0.7=default_had23c3d_0
@@ -155,9 +167,11 @@ dependencies:
   - lz4-c=1.9.3=h9c3ff4c_1
   - lzo=2.10=h516909a_1000
   - markupsafe=2.1.2=py39h72bdee0_0
+  - matplotlib-base=3.7.0=py39he190548_0
   - matplotlib-inline=0.1.6=pyhd8ed1ab_0
   - mistune=2.0.5=pyhd8ed1ab_0
   - mpg123=1.31.2=hcb278e6_0
+  - munkres=1.1.4=pyh9f0ad1d_0
   - mysql-common=8.0.32=ha901b37_0
   - mysql-libs=8.0.32=hd7da12d_0
   - nbclient=0.7.2=pyhd8ed1ab_0
@@ -175,6 +189,7 @@ dependencies:
   - numpy=1.23.5=py39h3d75532_0
   - opencv=4.6.0=py39hf3d152e_9
   - openh264=2.3.1=h27087fc_1
+  - openjpeg=2.5.0=hfec8fc6_2
   - openssl=3.0.8=h0b41bf4_0
   - p11-kit=0.24.1=hc5aa10d_0
   - packaging=23.0=pyhd8ed1ab_0
@@ -185,6 +200,7 @@ dependencies:
   - pcre2=10.40=hc3806b6_0
   - pexpect=4.8.0=pyh1a96a4e_2
   - pickleshare=0.7.5=py_1003
+  - pillow=9.4.0=py39h2320bf1_1
   - pip=22.3.1=pyhd8ed1ab_0
   - pixman=0.40.0=h36c2ea0_0
   - pkg-config=0.29.2=h36c2ea0_1008
@@ -200,10 +216,12 @@ dependencies:
   - pure_eval=0.2.2=pyhd8ed1ab_0
   - py-opencv=4.6.0=py39hcca971b_9
   - pybind11-abi=4=hd8ed1ab_3
+  - pycocotools=2.0.6=py39h2ae25f5_1
   - pycosat=0.6.4=py39hb9d737c_1
   - pycparser=2.21=pyhd8ed1ab_0
   - pygments=2.14.0=pyhd8ed1ab_0
   - pyopenssl=23.0.0=pyhd8ed1ab_0
+  - pyparsing=3.0.9=pyhd8ed1ab_0
   - pyrsistent=0.19.3=py39h72bdee0_0
   - pysocks=1.7.1=pyha2e5f31_6
   - python=3.9.15=hba424b6_0_cpython
@@ -235,6 +253,7 @@ dependencies:
   - typing-extensions=4.4.0=hd8ed1ab_0
   - typing_extensions=4.4.0=pyha770c72_0
   - tzdata=2022g=h191b570_0
+  - unicodedata2=15.0.0=py39hb9d737c_0
   - urllib3=1.26.14=pyhd8ed1ab_0
   - wandb=0.13.10=pyhd8ed1ab_0
   - wcwidth=0.2.6=pyhd8ed1ab_0
@@ -278,7 +297,6 @@ dependencies:
       - braceexpand==0.1.7
       - colorama==0.4.4
       - cryptography==38.0.4
-      - cython==0.29.33
       - docutils==0.16
       - fastargs==1.2.0
       - ffcv==0.0.3rc1
@@ -291,12 +309,11 @@ dependencies:
       - nibabel==5.0.1
       - numexpr==2.8.4
       - pandas==1.5.3
-      - pillow==9.4.0
       - pillow-simd==9.0.0.post1
       - pims==0+unknown
       - pyasn1==0.4.8
       - pycortex==1.2.6
-      - pyparsing==3.0.9
+      - python-graphviz==0.20.1
       - pytorch-pfn-extras==0.6.4
       - pyturbojpeg==1.1.2
       - pytz==2022.7.1
@@ -308,6 +325,7 @@ dependencies:
       - terminaltables==3.1.10
       - torch==1.13.1+cu117
       - torchaudio==0.13.1+cu117
+      - torchlens==0.1.0
       - torchvision==0.14.1+cu117
       - webdataset==0.2.31
       - webencodings==0.5.1
