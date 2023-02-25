@@ -21,6 +21,7 @@
 *.npz
 *.np
 *.pdf
+*.npy
 
 # images
 *.pbm
