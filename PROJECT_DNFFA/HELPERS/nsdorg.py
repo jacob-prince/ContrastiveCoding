@@ -323,8 +323,22 @@ def load_voxel_info(subj, space, beta_version):
 
 def get_voxel_group(subj, space, voxel_group, ncsnr_threshold, roi_dfs, plot = True):
     
-        # need to define two main things: which rows of the roi_df(s) are we encoding, and which images are we using as train/test set
-
+    voxel_group_info = {'nativesurface': 
+                            {'nsdgeneral': ('nsdgeneral',        1),
+                             'FFA-1':      ('floc-faces.label',  'FFA-1'),
+                             'FFA-2':      ('floc-faces.label',  'FFA-2'),
+                             'OFA':        ('floc-faces.label',  'OFA'),
+                             'PPA':        ('floc-places.label', 'PPA'),
+                             'OPA':        ('floc-places.label', 'OPA'),
+                             'EBA':        ('floc-bodies.label', 'EBA'),
+                             'FBA-1':      ('floc-bodies.label', 'FBA-1'),
+                             'FBA-2':      ('floc-bodies.label', 'FBA-2'),
+                             'VWFA-1':     ('floc-words.label',  'VWFA-1'),
+                             'VWFA-2':     ('floc-words.label',  'VWFA-2'),
+                             'OWFA':       ('floc-words.label',  'OWFA')}}
+    
+    field, incl_val = voxel_group_info[space][voxel_group]
+    
     include_idx = dict()
 
     if space == 'func1pt8mm':
@@ -333,26 +347,14 @@ def get_voxel_group(subj, space, voxel_group, ncsnr_threshold, roi_dfs, plot = T
     elif space == 'nativesurface':
         
         hemis = ['lh', 'rh']
-
-        # liberal mask of visual cortex
-        if voxel_group == 'nsdgeneral':
-
-            for h, hemi in enumerate(hemis):
-                include_idx[hemi] = np.logical_and(roi_dfs[h][f'{hemi}.nsdgeneral'].values == 1,
-                                                   roi_dfs[h][f'{hemi}.ncsnr'].values > ncsnr_threshold)
-
-        elif voxel_group == 'FFA-1':
-
-            for h, hemi in enumerate(hemis):
-                include_idx[hemi] = np.logical_and(np.isin(roi_dfs[h][f'{hemi}.floc-faces.label'].values, 'FFA-1'),
-                                                   roi_dfs[h][f'{hemi}.ncsnr'].values > ncsnr_threshold)
-                
-        elif voxel_group == 'PPA':
+        
+        for h, hemi in enumerate(hemis): 
             
-            for h, hemi in enumerate(hemis):
-                include_idx[hemi] = np.logical_and(np.isin(roi_dfs[h][f'{hemi}.floc-places.label'].values, 'PPA'),
-                                                   roi_dfs[h][f'{hemi}.ncsnr'].values > ncsnr_threshold) 
+            include_idx[hemi] = np.logical_and(roi_dfs[h][f'{hemi}.{field}'].values == incl_val,
+                                               roi_dfs[h][f'{hemi}.ncsnr'].values > ncsnr_threshold)
 
+            #if np.sum(include_idx[hemi]) == 0:
+            #    set_trace()
 
         include_idx['full'] = np.concatenate((include_idx['lh'], include_idx['rh']))
         
@@ -361,10 +363,12 @@ def get_voxel_group(subj, space, voxel_group, ncsnr_threshold, roi_dfs, plot = T
     plot_data = include_idx['full']
 
     if plot:
+        
         volume = plotting.plot_ROI_flatmap(subj,space,
-                                            f'# total voxels for {subj}, {voxel_group}: {np.sum(plot_data)}'
-                                           ,plot_data,vmin=np.min(plot_data),
-                                                      vmax=np.max(plot_data))
+                                            f'# total voxels for {subj}, {voxel_group}: {np.sum(plot_data)}',plot_data,
+                                           vmin=np.min(plot_data),
+                                           vmax=np.max(plot_data))
+        
         
     return include_idx
     
@@ -454,6 +458,14 @@ def load_betas(subj, space, voxel_group, ncsnr_threshold = 0.2,
                     raise ValueError('func1pt8mm not implemented yet')
                     
             start_idx += 750
+            
+        if subj_betas[hemi].shape[0] < 30000:
+
+            n_missing = 30000 - subj_betas[hemi].shape[0]
+
+            # add blank rows corresponding to missed trials
+            subj_betas[hemi] = np.vstack((subj_betas[hemi], np.full((n_missing, subj_betas[hemi].shape[1]), np.nan)))
+            print(subj_betas[hemi].shape)
             
     ######## group repetitions together
     

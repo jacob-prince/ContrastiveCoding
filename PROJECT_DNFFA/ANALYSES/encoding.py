@@ -13,7 +13,7 @@ import scipy.stats as stats
 from IPython.core.debugger import set_trace
 from multiprocessing import Process
 
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, LinearRegression
 #from sklearn.random_projection import SparseRandomProjection
 #from sklearn.random_projection import johnson_lindenstrauss_min_dim
 
@@ -131,63 +131,68 @@ def main():
         for h, hemi in enumerate(hemis):
 
             nvox = brain_data['train'][hemi].shape[1]
+            
+            if nvox > 0:
 
-            voxel_labels = list(roi_dfs[h][include_idx[hemi]].index)
-            voxel_labels = [f"{vlab.split(',')[0][1:]}_{vlab.split(',')[1][1:-1]}" for vlab in voxel_labels]
-            voxel_savefns = np.array([f'{layer_savedir}/{vlab}.npy' for vlab in voxel_labels])
+                voxel_labels = list(roi_dfs[h][include_idx[hemi]].index)
+                voxel_labels = [f"{vlab.split(',')[0][1:]}_{vlab.split(',')[1][1:-1]}" for vlab in voxel_labels]
+                voxel_savefns = np.array([f'{layer_savedir}/{vlab}.npy' for vlab in voxel_labels])
 
-            obatch_start_idx = list(range(0, nvox, args.outer_batch_size))
-            n_obatches = len(obatch_start_idx)
+                obatch_start_idx = list(range(0, nvox, args.outer_batch_size))
+                n_obatches = len(obatch_start_idx)
 
-            for obatch_num, this_obatch_start in enumerate(obatch_start_idx):
+                for obatch_num, this_obatch_start in enumerate(obatch_start_idx):
 
-                this_obatch_end = this_obatch_start + args.outer_batch_size
+                    this_obatch_end = this_obatch_start + args.outer_batch_size
 
-                y_train = copy.deepcopy(brain_data['train'][hemi][:, this_obatch_start : this_obatch_end])
-                y_test = copy.deepcopy(brain_data['test'][hemi][:, this_obatch_start : this_obatch_end])
+                    y_train = copy.deepcopy(brain_data['train'][hemi][:, this_obatch_start : this_obatch_end])
+                    y_test = copy.deepcopy(brain_data['test'][hemi][:, this_obatch_start : this_obatch_end])
 
-                print(X_train.shape, y_train.shape,
-                      X_test.shape, y_test.shape)
+                    print(X_train.shape, y_train.shape,
+                          X_test.shape, y_test.shape)
 
-                this_voxel_savefns = voxel_savefns[this_obatch_start : this_obatch_end]
+                    this_voxel_savefns = voxel_savefns[this_obatch_start : this_obatch_end]
 
-                print(f'fitting {hemi} outer batch {obatch_num+1} of {n_obatches}')
+                    print(f'fitting {hemi} outer batch {obatch_num+1} of {n_obatches}')
 
-                procs = []
+                    procs = []
 
-                if this_obatch_end > nvox:
-                    idx_required = nvox - this_obatch_start
-                    ibatch_start_idx = list(range(0, idx_required, args.inner_batch_size))  
-                else:
-                    ibatch_start_idx = list(range(0, args.outer_batch_size, args.inner_batch_size))
-                n_ibatches = len(ibatch_start_idx)
+                    if this_obatch_end > nvox:
+                        idx_required = nvox - this_obatch_start
+                        ibatch_start_idx = list(range(0, idx_required, args.inner_batch_size))  
+                    else:
+                        ibatch_start_idx = list(range(0, args.outer_batch_size, args.inner_batch_size))
+                    n_ibatches = len(ibatch_start_idx)
 
-                # instantiating process with arguments
-                for ibatch_num, this_ibatch_start in enumerate(progress_bar(ibatch_start_idx)):
+                    # instantiating process with arguments
+                    for ibatch_num, this_ibatch_start in enumerate(progress_bar(ibatch_start_idx)):
 
-                    this_ibatch_end = this_ibatch_start + args.inner_batch_size
+                        this_ibatch_end = this_ibatch_start + args.inner_batch_size
 
-                    absolute_start_idx = this_obatch_start+this_ibatch_start
-                    absolute_end_idx = this_obatch_start+this_ibatch_end
+                        absolute_start_idx = this_obatch_start+this_ibatch_start
+                        absolute_end_idx = this_obatch_start+this_ibatch_end
 
-                    print(f'\t\tfitting inner group {ibatch_num+1} of {n_ibatches}. voxel indices {absolute_start_idx} to {absolute_end_idx}')
+                        print(f'\t\tfitting inner group {ibatch_num+1} of {n_ibatches}. voxel indices {absolute_start_idx} to {absolute_end_idx}')
 
-                    encoding_inputs = {'X_train': copy.deepcopy(X_train),
-                                     'X_test': copy.deepcopy(X_test),
-                                     'y_train': copy.deepcopy(y_train[:, this_ibatch_start : this_ibatch_end]),
-                                     'y_test':  copy.deepcopy(y_test[:,  this_ibatch_start : this_ibatch_end]),
-                                     'voxel_savefns': copy.deepcopy(this_voxel_savefns[this_ibatch_start : this_ibatch_end]),
-                                     'overwrite': args.overwrite
-                                     }
+                        encoding_inputs = {'X_train': copy.deepcopy(X_train),
+                                         'X_test': copy.deepcopy(X_test),
+                                         'y_train': copy.deepcopy(y_train[:, this_ibatch_start : this_ibatch_end]),
+                                         'y_test':  copy.deepcopy(y_test[:,  this_ibatch_start : this_ibatch_end]),
+                                         'voxel_savefns': copy.deepcopy(this_voxel_savefns[this_ibatch_start : this_ibatch_end]),
+                                         'overwrite': args.overwrite
+                                         }
 
-                    proc = Process(target=fit_save_encoding_model, 
-                                   args=(encoding_inputs,))
-                    procs.append(proc)
-                    proc.start()
+                        proc = Process(target=fit_save_encoding_model, 
+                                       args=(encoding_inputs,))
+                        procs.append(proc)
+                        proc.start()
 
-                # complete the processes
-                for proc in procs:
-                    proc.join()       
+                    # complete the processes
+                    for proc in procs:
+                        proc.join() 
+            else:
+                
+                print(f'no voxels in ROI {hemi}.{args.ROI} for subj {args.subj}. skipping.')
 
     
     print('...done.')
@@ -252,7 +257,8 @@ def get_train_test_data(subj, space, subj_betas, rep_cocos, train_imageset, test
                 brain_data[partition][hemi][c] = subj_betas[hemi][idx10k]
 
         for hemi in hemis:
-            brain_data[partition][hemi] = np.mean(brain_data[partition][hemi], axis = 1)
+            # need nanmean in case subject is missing data
+            brain_data[partition][hemi] = np.nanmean(brain_data[partition][hemi], axis = 1)
             print(partition, hemi, image_data[partition].shape, brain_data[partition][hemi].shape)
             
     return image_data, brain_data
@@ -276,10 +282,10 @@ def fit_save_encoding_model(encoding_inputs):
         
     if fit_model:
         print('\t\t\trunning encoding model')
-
+        
         mdl = Lasso(positive=True, alpha = 0.1, random_state = 365, 
                     selection = 'random', tol = 1e-3, fit_intercept=True)
-
+        
         mdl.fit(encoding_inputs['X_train'], 
                 encoding_inputs['y_train'])
 
@@ -294,7 +300,7 @@ def fit_save_encoding_model(encoding_inputs):
                 out['y_pred'] = y_pred
             else:
                 out['y_pred'] = y_pred[:,v]
-            out['r'] = stats.pearsonr(encoding_inputs['y_test'][:,v],                                                                               out['y_pred'])[0]
+            out['r'] = stats.pearsonr(encoding_inputs['y_test'][:,v], out['y_pred'])[0]
 
             np.save(voxel_savefn, out, allow_pickle=True)
     else:

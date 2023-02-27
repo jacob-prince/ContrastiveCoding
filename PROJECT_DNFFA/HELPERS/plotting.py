@@ -20,7 +20,8 @@ def plot_ROI_flatmap(subj, space, roi_group, included_voxels, mapper='nearest',v
                      curvature_contrast=0.3,
                      curvature_brightness=0.8,
                      curvature_threshold=True,
-                     with_colorbar=colorbar)
+                     with_colorbar=colorbar,
+                     recache=False)
     plt.title(roi_group,fontsize=44)
     plt.show()
     
