@@ -27,3 +27,12 @@ def ffcv_imagenet1k_valset():
 
 def training_checkpoint_dir():
     return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/EXPERIMENTS_MODELS/checkpoints'
+
+def encoding_output_dir():
+    return f'{base()}/DataLocal-w/NSD_encoding_models'
+
+def floc_imageset_dir():
+    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/STIMULUS_SETS/localizer'
+
+def selective_unit_dir():
+    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/EXPERIMENTS_MODELS/selective_units'
