@@ -32,22 +32,15 @@ def load_model(model_name):
             model, state_dict = barlow_twins.alexnet_gn_barlow_twins(pretrained=False)
         else:
             model, state_dict = barlow_twins.alexnet_gn_barlow_twins(pretrained=True)
-        
-        transform = transforms.Compose([
-                transforms.Resize(224),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                         std=[0.229, 0.224, 0.225]),
-            ])
+            
+        transform = ImageClassification(resize_size=224, crop_size=224)
         
     return model, transform, state_dict
 
-# todo: refactor/remove in favor of more general feature extraction fn
-def get_NSD_alexnet_activations(image_data):
+def get_NSD_train_test_activations(model_name, image_data):
     
-    model, transform, _ = load_model('alexnet-supervised')
-
+    model, transform, _ = load_model(model_name)
+    
     activations = dict()
 
     for partition in ['train','test']:
@@ -62,7 +55,31 @@ def get_NSD_alexnet_activations(image_data):
         for layer in progress_bar(model_history.layer_labels):
             activations[partition][layer] = model_history[layer].tensor_contents.detach().numpy()
             
-    return activations
+    return activations 
+
+def alexnet_layer_str_format(layer_list):
+    
+    out = []
+    c = 0
+    for layer in layer_list:
+        if 'conv2d' in layer:
+            c+=1
+            out.append(f'conv{c}')
+        elif 'relu' in layer:
+            out.append(f'relu{c}')
+        elif 'maxpool' in layer:
+            out.append(f'maxpool{c}')
+        elif 'groupnorm' in layer:
+            out.append(f'groupnorm{c}')
+        elif 'batchnorm' in layer:
+            out.append(f'batchnorm{c}')
+        elif 'linear' in layer:
+            c+=1
+            out.append(f'fc{c}')
+            
+    assert(len(out) == len(layer_list))
+    return out
+
 
 def get_layer_group(model_name, layer_list = []):
     
@@ -103,8 +120,7 @@ def get_layer_group(model_name, layer_list = []):
                              'batchnorm_2_32',
                              'relu_7_33',
                              'linear_3_34',
-                             'batchnorm_3_35',
-                             'output_1_36']
+                             'batchnorm_3_35']
 
     if layer_list == []:
         layers_to_analyze = all_layer_names

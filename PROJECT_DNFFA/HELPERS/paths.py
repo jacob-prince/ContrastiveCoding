@@ -34,5 +34,8 @@ def encoding_output_dir():
 def floc_imageset_dir():
     return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/STIMULUS_SETS/localizer'
 
+def probe_imageset_dir():
+    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/STIMULUS_SETS/experimental'
+
 def selective_unit_dir():
     return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/EXPERIMENTS_MODELS/selective_units'

@@ -101,7 +101,7 @@ def get_model_selective_units(model_name, selective_units_to_extract,
             plt.xlabel('floc img idx')
             plt.title('domain of each floc image');
 
-            # data loader object is required for passing images through the network - choose batch size and num workers here
+        # data loader object is required for passing images through the network - choose batch size and num workers here
         data_loader = torch.utils.data.DataLoader(
             dataset=floc_dataset,
             batch_size=len(floc_dataset),

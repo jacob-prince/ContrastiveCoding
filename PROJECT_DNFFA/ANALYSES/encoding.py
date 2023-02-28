@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import h5py
+import time
 import copy
 from fastprogress import progress_bar
 import scipy.stats as stats
@@ -25,13 +26,13 @@ import torchlens as tl
 
 parser = argparse.ArgumentParser(description='Fit NSD encoding models')
 
-parser.add_argument('--model-name', default='alexnet-supervised', 
+parser.add_argument('--model-name', default='alexnet-barlow-twins', 
                     type=str, help='model whose features will be fit')
 
-parser.add_argument('--units-for-encoding', default='layer', 
+parser.add_argument('--units-for-encoding', default='vpnl-floc-scenes', 
                     type=str, help='units used to encode, either "layer" or <floc-imageset_domain>')
 
-parser.add_argument('--subj', default='subj05', 
+parser.add_argument('--subj', default='subj02', 
                     type=str, help='NSD subject')
 
 parser.add_argument('--space', default='nativesurface', 
@@ -40,13 +41,13 @@ parser.add_argument('--space', default='nativesurface',
 parser.add_argument('--ROI', default='PPA', 
                     type=str, help='brain data ROI')
 
-parser.add_argument('--ncsnr-threshold', default=0, 
+parser.add_argument('--ncsnr-threshold', default=0.3, 
                     type=float, help='only encode voxels above a specific noise ceiling')
 
 parser.add_argument('--train-imageset', default='nonshared1000-3rep-batch0', 
                     type=str, help='images used for training the encoding model')
 
-parser.add_argument('--test-imageset', default='special515', 
+parser.add_argument('--test-imageset', default='nonshared1000-3rep-batch1', 
                     type=str, help='images used for testing the encoding model')
 
 parser.add_argument('--layers-to-analyze', nargs='*', default=[], help='layers to use for model fitting')
@@ -54,15 +55,17 @@ parser.add_argument('--layers-to-analyze', nargs='*', default=[], help='layers t
 parser.add_argument('--overwrite', default=False, 
                     type=bool, help='overwrite existing model fits?')
 
-parser.add_argument('--outer-batch-size', default=500, 
+parser.add_argument('--outer-batch-size', default=5000, 
                     type=int, help='how many voxels per chunk of parallelization processes?')
 
-parser.add_argument('--inner-batch-size', default=50, 
+parser.add_argument('--inner-batch-size', default=1000, 
                     type=int, help='how many voxels per individual process?')
 
 nsddir = paths.nsd()
 
 def main():
+    
+    time0 = time.time()
     
     args = parser.parse_args()
         
@@ -93,15 +96,15 @@ def main():
                                                                     ncsnr_threshold = args.ncsnr_threshold,
                                                                     plot=True)
     
-    image_data, brain_data = get_train_test_data(subj = args.subj,
+    image_data, brain_data = get_NSD_train_test_images_and_betas(subj = args.subj,
                                                  space = args.space,
                                                  subj_betas = subj_betas,
                                                  rep_cocos = rep_cocos,
                                                  train_imageset = args.train_imageset,
                                                  test_imageset = args.test_imageset)
     
-    activations = nnutils.get_NSD_alexnet_activations(image_data)
     
+    activations = nnutils.get_NSD_train_test_activations(args.model_name, image_data)
     
     ################################
     
@@ -127,79 +130,87 @@ def main():
         if args.units_for_encoding != 'layer':
             X_train = X_train[:, selective_unit_dict[layer]['selective_idx']]
             X_test = X_test[:,   selective_unit_dict[layer]['selective_idx']]
-
-        for h, hemi in enumerate(hemis):
-
-            nvox = brain_data['train'][hemi].shape[1]
             
-            if nvox > 0:
+        # skip if there are 0 features
+        if X_train.shape[1] > 0:
 
-                voxel_labels = list(roi_dfs[h][include_idx[hemi]].index)
-                voxel_labels = [f"{vlab.split(',')[0][1:]}_{vlab.split(',')[1][1:-1]}" for vlab in voxel_labels]
-                voxel_savefns = np.array([f'{layer_savedir}/{vlab}.npy' for vlab in voxel_labels])
+            for h, hemi in enumerate(hemis):
 
-                obatch_start_idx = list(range(0, nvox, args.outer_batch_size))
-                n_obatches = len(obatch_start_idx)
+                nvox = brain_data['train'][hemi].shape[1]
 
-                for obatch_num, this_obatch_start in enumerate(obatch_start_idx):
+                if nvox > 0:
 
-                    this_obatch_end = this_obatch_start + args.outer_batch_size
+                    voxel_labels = list(roi_dfs[h][include_idx[hemi]].index)
+                    voxel_labels = [f"{vlab.split(',')[0][1:]}_{vlab.split(',')[1][1:-1]}" for vlab in voxel_labels]
+                    voxel_savefns = np.array([f'{layer_savedir}/{vlab}.npy' for vlab in voxel_labels])
 
-                    y_train = copy.deepcopy(brain_data['train'][hemi][:, this_obatch_start : this_obatch_end])
-                    y_test = copy.deepcopy(brain_data['test'][hemi][:, this_obatch_start : this_obatch_end])
+                    obatch_start_idx = list(range(0, nvox, args.outer_batch_size))
+                    n_obatches = len(obatch_start_idx)
 
-                    print(X_train.shape, y_train.shape,
-                          X_test.shape, y_test.shape)
+                    for obatch_num, this_obatch_start in enumerate(obatch_start_idx):
 
-                    this_voxel_savefns = voxel_savefns[this_obatch_start : this_obatch_end]
+                        this_obatch_end = this_obatch_start + args.outer_batch_size
 
-                    print(f'fitting {hemi} outer batch {obatch_num+1} of {n_obatches}')
+                        y_train = copy.deepcopy(brain_data['train'][hemi][:, this_obatch_start : this_obatch_end])
+                        y_test = copy.deepcopy(brain_data['test'][hemi][:, this_obatch_start : this_obatch_end])
 
-                    procs = []
+                        print(X_train.shape, y_train.shape,
+                              X_test.shape, y_test.shape)
 
-                    if this_obatch_end > nvox:
-                        idx_required = nvox - this_obatch_start
-                        ibatch_start_idx = list(range(0, idx_required, args.inner_batch_size))  
-                    else:
-                        ibatch_start_idx = list(range(0, args.outer_batch_size, args.inner_batch_size))
-                    n_ibatches = len(ibatch_start_idx)
+                        this_voxel_savefns = voxel_savefns[this_obatch_start : this_obatch_end]
 
-                    # instantiating process with arguments
-                    for ibatch_num, this_ibatch_start in enumerate(progress_bar(ibatch_start_idx)):
+                        print(f'fitting {hemi} outer batch {obatch_num+1} of {n_obatches}')
 
-                        this_ibatch_end = this_ibatch_start + args.inner_batch_size
+                        procs = []
 
-                        absolute_start_idx = this_obatch_start+this_ibatch_start
-                        absolute_end_idx = this_obatch_start+this_ibatch_end
+                        if this_obatch_end > nvox:
+                            idx_required = nvox - this_obatch_start
+                            ibatch_start_idx = list(range(0, idx_required, args.inner_batch_size))  
+                        else:
+                            ibatch_start_idx = list(range(0, args.outer_batch_size, args.inner_batch_size))
+                        n_ibatches = len(ibatch_start_idx)
 
-                        print(f'\t\tfitting inner group {ibatch_num+1} of {n_ibatches}. voxel indices {absolute_start_idx} to {absolute_end_idx}')
+                        # instantiating process with arguments
+                        for ibatch_num, this_ibatch_start in enumerate(progress_bar(ibatch_start_idx)):
 
-                        encoding_inputs = {'X_train': copy.deepcopy(X_train),
-                                         'X_test': copy.deepcopy(X_test),
-                                         'y_train': copy.deepcopy(y_train[:, this_ibatch_start : this_ibatch_end]),
-                                         'y_test':  copy.deepcopy(y_test[:,  this_ibatch_start : this_ibatch_end]),
-                                         'voxel_savefns': copy.deepcopy(this_voxel_savefns[this_ibatch_start : this_ibatch_end]),
-                                         'overwrite': args.overwrite
-                                         }
+                            this_ibatch_end = this_ibatch_start + args.inner_batch_size
 
-                        proc = Process(target=fit_save_encoding_model, 
-                                       args=(encoding_inputs,))
-                        procs.append(proc)
-                        proc.start()
+                            absolute_start_idx = this_obatch_start+this_ibatch_start
+                            absolute_end_idx = this_obatch_start+this_ibatch_end
 
-                    # complete the processes
-                    for proc in procs:
-                        proc.join() 
-            else:
-                
-                print(f'no voxels in ROI {hemi}.{args.ROI} for subj {args.subj}. skipping.')
+                            print(f'\t\tfitting inner group {ibatch_num+1} of {n_ibatches}. voxel indices {absolute_start_idx} to {absolute_end_idx}')
 
+                            encoding_inputs = {'X_train': copy.deepcopy(X_train),
+                                             'X_test': copy.deepcopy(X_test),
+                                             'y_train': copy.deepcopy(y_train[:, this_ibatch_start : this_ibatch_end]),
+                                             'y_test':  copy.deepcopy(y_test[:,  this_ibatch_start : this_ibatch_end]),
+                                             'voxel_savefns': copy.deepcopy(this_voxel_savefns[this_ibatch_start : this_ibatch_end]),
+                                             'overwrite': args.overwrite
+                                             }
+
+                            proc = Process(target=fit_save_encoding_model, 
+                                           args=(encoding_inputs,))
+                            procs.append(proc)
+                            proc.start()
+
+                        # complete the processes
+                        for proc in procs:
+                            proc.join() 
+                else:
+
+                    print(f'no voxels in ROI {hemi}.{args.ROI} for subj {args.subj}. skipping.')
+        else:
+            
+            print(f'no features in {args.model_name} layer {layer} for unit group {args.units_for_encoding}. skipping.')
     
+    time1 = time.time()
+    
+    print(f'time elapsed: {time1 - time0} sec.')
     print('...done.')
     
     return
     
-def get_train_test_data(subj, space, subj_betas, rep_cocos, train_imageset, test_imageset):
+def get_NSD_train_test_images_and_betas(subj, space, subj_betas, rep_cocos, train_imageset, test_imageset):
     
     if space == 'nativesurface':
         hemis = ['lh','rh']
