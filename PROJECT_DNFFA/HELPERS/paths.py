@@ -39,3 +39,7 @@ def probe_imageset_dir():
 
 def selective_unit_dir():
     return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/EXPERIMENTS_MODELS/selective_units'
+
+def figure_savedir():
+    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/NOTEBOOKS/figure_outputs'
+    
