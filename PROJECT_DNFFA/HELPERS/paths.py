@@ -11,7 +11,7 @@ def full_coco_annots():
     return f'{base()}/DataLocal-w/COCO/annotations'
 
 def nsd_coco_annots():
-    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/STIMULUS_SETS/fMRI/NSD_COCO_annotations'
+    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/STIMULUS_SETS/NSD_COCO_annotations'
 
 def cifar10():
     return f'{base()}/DataLocal-w/ffcv-cifar10/'
@@ -29,17 +29,17 @@ def training_checkpoint_dir():
     return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/EXPERIMENTS_MODELS/checkpoints'
 
 def encoding_output_dir():
-    return f'{base()}/DataLocal-w/NSD_encoding_models'
+    return f'{base()}/DataLocal-w/NSD_encoding_models'    
 
-def floc_imageset_dir():
-    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/STIMULUS_SETS/localizer'
-
-def probe_imageset_dir():
-    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/STIMULUS_SETS/experimental'
+def imageset_dir():
+    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/STIMULUS_SETS'
 
 def selective_unit_dir():
     return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/EXPERIMENTS_MODELS/selective_units'
 
 def figure_savedir():
     return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/NOTEBOOKS/figure_outputs'
+
+def weight_savedir():
+    return f'{base()}/DropboxProjects/DNFFA/PROJECT_DNFFA/EXPERIMENTS_MODELS/weights'
     

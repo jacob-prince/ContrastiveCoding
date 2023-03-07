@@ -1,5 +1,6 @@
 from os.path import exists
 import torch
+from torch import nn
 import torchvision
 from torchvision import transforms
 import torchlens as tl
@@ -33,6 +34,17 @@ def load_model(model_name):
         else:
             model, state_dict = barlow_twins.alexnet_gn_barlow_twins(pretrained=True)
             
+        transform = ImageClassification(resize_size=224, crop_size=224)
+        
+    elif 'alexnet-vggface' in model_name:
+        
+        checkpoint = torch.load(f'{paths.weight_savedir()}/alexnet_faces_final.pth.tar',map_location='cpu')
+        state_dict = checkpoint['state_dict']
+    
+        state_dict = {str.replace(k,'module.',''): v for k,v in state_dict.items()}
+        model = torchvision.models.alexnet(num_classes=3372).eval()
+        model.load_state_dict(state_dict)
+        
         transform = ImageClassification(resize_size=224, crop_size=224)
         
     return model, transform, state_dict
@@ -83,7 +95,7 @@ def alexnet_layer_str_format(layer_list):
 
 def get_layer_group(model_name, layer_list = []):
     
-    if 'alexnet-supervised' in model_name:
+    if 'alexnet-supervised' in model_name or 'alexnet-vggface' in model_name:
         
         all_layer_names = ['conv2d_1_2', 'relu_1_3', 'maxpool2d_1_4', 
                            'conv2d_2_5', 'relu_2_6', 'maxpool2d_2_7', 
@@ -130,3 +142,10 @@ def get_layer_group(model_name, layer_list = []):
         layers_to_analyze = layer_list
         
     return layers_to_analyze
+
+def convert_relu(parent):
+    for child_name, child in parent.named_children():
+        if isinstance(child, nn.ReLU):
+            setattr(parent, child_name, nn.ReLU(inplace=False))
+        elif len(list(child.children())) > 0:
+            convert_relu(child)

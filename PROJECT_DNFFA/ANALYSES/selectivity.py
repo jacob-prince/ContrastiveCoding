@@ -64,8 +64,11 @@ def get_model_selective_units(model_name, selective_units_to_extract,
     else:
     
         model, transforms, _ = nnutils.load_model(model_name)
+        
+        # ensure that all relus are converted to inplace=False
+        nnutils.convert_relu(model)
 
-        floc_imageset_dir = paths.floc_imageset_dir()
+        floc_imageset_dir = f'{paths.imageset_dir()}/{floc_imageset}'
 
         floc_dataset = datasets.ImageFolder(root = floc_imageset_dir, transform = transforms)
 
@@ -81,9 +84,13 @@ def get_model_selective_units(model_name, selective_units_to_extract,
 
             all_domain_idx = np.repeat(floc_categ_domain_ref,categ_nimg)
 
-        elif floc_imageset == 'imagefiles-fullset':
+        elif floc_imageset == 'classic-categ':
 
-            floc_domains = floc_dataset.classes
+            floc_domains = np.array([f"{domain.split('-')[1]}" for domain in floc_dataset.classes])
+            floc_categ_domain_ref = np.array([0,1,2,3,4,5,6])
+            categ_nimg = 80
+
+            all_domain_idx = np.repeat(floc_categ_domain_ref,categ_nimg)
 
         target_domain_val = np.squeeze(np.argwhere(floc_domains == target_domain))
 
@@ -158,6 +165,8 @@ def compute_selectivity(Y, all_domain_idx, target_domain_val, FDR_p, verbose=Tru
         print(f'\tshape of Y_curr is {Y_curr.shape}')
         
     dom_pref_rankings = []
+    dom_tvals_unranked = []
+    
     first_comparison = True
     
     for this_domain_val in unique_domain_vals:
@@ -178,6 +187,9 @@ def compute_selectivity(Y, all_domain_idx, target_domain_val, FDR_p, verbose=Tru
             # sort indices according to the t map
             # sort the neuron indices according to the t map
             dom_pref_ranking = np.flip(np.argsort(t))
+            
+            # accumulate tvals
+            dom_tvals_unranked.append(t)
 
             # assert that no indices are repeated
             assert(len(np.unique(dom_pref_ranking)) == len(dom_pref_ranking))
@@ -219,12 +231,17 @@ def compute_selectivity(Y, all_domain_idx, target_domain_val, FDR_p, verbose=Tru
     # get the final selectivity indices - lowest score = most selective
     dom_ranking_score_final = np.argsort(dom_ranking_score)
     
+    # get the average t-val for all units across all comparisons
+    mean_tvals_unranked = np.nanmean(np.vstack(dom_tvals_unranked), axis = 0)
+    
     # log
     out = dict()
     out['n_selective'] = dom_nsig
     out['prop_selective'] = dom_nsig / n_neurons_in_layer
     out['selective_idx'] = dom_neurons
     out['selective_rankings'] = dom_ranking_score_final
+    out['mean_tvals_unranked'] = mean_tvals_unranked
+
     
     # create binary mask for lesioning, where all indices except selective units are 1
     lesioning_mask = np.ones(Y.shape[1],)

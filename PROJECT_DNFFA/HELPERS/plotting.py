@@ -40,13 +40,14 @@ def plot_selective_unit_props(selective_units, model_name, target_domain, floc_i
                   ( 'characters','purple'),
                   ( 'scrambled','navy')]
 
-    elif floc_imageset == 'imagefiles-fullset':
+    elif floc_imageset == 'classic-categ':
 
-        colors = [( 'Faces','tomato'),
+        colors = [('Faces','tomato'),
                   ('Bodies','orange'),
-                  ('Objects','dodgerblue'),
                   ('Scenes','limegreen'),
-                  ( 'Scrambled','navy')]
+                  ('Words','purple'),
+                  ('Objects','dodgerblue'),
+                  ('Scrambled','dimgray')]
 
     floc_colors = [x[1] for x in colors]
     floc_domains = [x[0] for x in colors]

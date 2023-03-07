@@ -55,10 +55,10 @@ parser.add_argument('--layers-to-analyze', nargs='*', default=[], help='layers t
 parser.add_argument('--overwrite', default=False, 
                     type=bool, help='overwrite existing model fits?')
 
-parser.add_argument('--outer-batch-size', default=5000, 
+parser.add_argument('--outer-batch-size', default=250, 
                     type=int, help='how many voxels per chunk of parallelization processes?')
 
-parser.add_argument('--inner-batch-size', default=1000, 
+parser.add_argument('--inner-batch-size', default=5, 
                     type=int, help='how many voxels per individual process?')
 
 nsddir = paths.nsd()
