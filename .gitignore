@@ -23,6 +23,7 @@
 *.pdf
 *.npy
 *.csv
+*.mat
 
 # images
 *.pbm
