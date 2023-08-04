@@ -1,0 +1,104 @@
+function [Gabor GistPC fh] = computeGaborAndGistFeatures(imFn, Nblocks, numberOfOrientationsPerScale, Npca)
+
+% inputs:
+% - cell array list of images (full path to file)
+% - gabor fileter parameters:
+%     Nblocks: grid size over the image 
+%     NrOrientationsPerScale: filters in fourier space from high to low SF
+%     NumPC: number of PCs to take for gist model
+%
+% outputs:
+% - Gabor and Gist structs with feature matrix and params
+
+
+% display:
+disp('...Constructing gabor and gist feature models')
+
+imBlock = load(imFn).images;
+
+% params:
+imSize = 425;%size(imread(imList{1}),1);
+numImages = size(imBlock,1);
+
+% set up gabor filters
+fprintf('... creating Gabor Filters\n');
+G = createRosasGabor(numberOfOrientationsPerScale, imSize);
+
+% compute features for each image:
+imMean = zeros(imSize*imSize, 1);
+for i=1:numImages
+    disp(['computing image ' num2str(i)])
+    %im=double(imread(imList{i}));
+    im=double(imBlock(i,:,:,:))
+    im = imresize(im,[imSize imSize]);
+    im=mean(im,3);
+    
+    % save pixel-wise
+    imMean = imMean+im(:);
+
+    % compute local features
+    [vC, ig] = localFeatures(im, G, Nblocks);
+    Features(:,i) = vC(:);
+    
+end
+imMean = imMean./numImages;
+imMean = reshape(imMean, [imSize, imSize]);
+
+% do pca for gist pc features:
+[itemsInPC, pc, latent] = pca(Features, Npca);
+itemsInPC = itemsInPC';
+vaf = diag(latent/sum(latent(:))); % variance accounted for
+
+
+% output:
+% ------
+Gabor.featureMatrix = Features';
+Gabor.paramString = sprintf('[%s] x %d', num2str(numberOfOrientationsPerScale), Nblocks);
+Gabor.NBlocks = Nblocks;
+Gabor.NrOrientationsPerScale = numberOfOrientationsPerScale;
+Gabor.G = G;
+
+GistPC.featureMatrix  = itemsInPC;
+GistPC.pcLocalWeights = pc;
+GistPC.NumPC = Npca;
+GistPC.latent = diag(latent);
+GistPC.vaf = vaf;
+
+
+% plot summary figure with gist feature params:
+ticks = [0:imSize/Nblocks:imSize];
+
+fh = figure('Position', [680   822   711   276], 'Color', [1 1 1]);
+subplot(1,2,1)
+for i=1:sum(numberOfOrientationsPerScale)
+    contour(fftshift(G(:,:,i)),[1 .7],'r');
+    hold on;
+end
+set(gca, 'FontSize', 12);
+axis('on', 'square', 'ij')
+title([ '[' num2str(numberOfOrientationsPerScale) ']' ], 'FontSize', 14);
+hold on
+plot(xlim, [imSize/2 imSize/2], 'k:');
+plot([imSize/2 imSize/2], ylim, 'k:');
+set(gca, 'XTick', ticks);
+set(gca, 'YTick', ticks);
+
+subplot(1,2,2)
+set(gca,'FontSize', 12);
+imagesc(imMean);
+colormap(gray);
+axis('equal', 'tight')
+title(['NBlocks = ' num2str(Nblocks)], 'FontSize', 14);
+for i=1:length(ticks)
+    hold on
+    plot([0 imSize], [ticks(i), ticks(i)], 'k', 'LineWidth', 3);
+    plot([ticks(i), ticks(i)], [0 imSize], 'k', 'LineWidth', 3);
+end
+set(gca, 'XTick', ticks);
+set(gca, 'YTick', ticks);
+
+
+
+
+
+
