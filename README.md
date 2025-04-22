@@ -6,7 +6,7 @@
 ![twitter_5](https://github.com/jacob-prince/PROJECT_DNFFA/assets/35503086/0ae3bcd0-b368-4677-ac4e-e9335e2e5412)
 
 This repository houses code for generating figures in the following Science Advances paper: 
-[https://www.biorxiv.org/content/10.1101/2023.08.04.551888v1 ](https://www.science.org/doi/10.1126/sciadv.adl1776) 
+[https://www.science.org/doi/10.1126/sciadv.adl1776](https://www.science.org/doi/10.1126/sciadv.adl1776) 
 
 All plotting routines depend on helper functions that exist in the following utilities repository:  
 https://github.com/jacob-prince/jsputils
